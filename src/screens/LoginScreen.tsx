@@ -5,10 +5,11 @@ import {
   View,
   Text,
   TextInput,
-  Button,
+  TouchableOpacity,
   StyleSheet,
   Alert,
-  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,17 +23,16 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/auth/login`,
-        { email, password }
-      );
+      const response = await axios.post(`${API_BASE_URL}/api/auth/login`, {
+        email,
+        password,
+      });
 
       const token = response.data.token;
-
       await AsyncStorage.setItem('token', token);
 
       Alert.alert('Login Success', 'You have successfully logged in!');
-      navigation.navigate('Home' as never); // make sure "Home" exists in your stack
+      navigation.navigate('Home' as never);
     } catch (error: any) {
       console.error('Login error:', error);
       Alert.alert(
@@ -43,25 +43,31 @@ const LoginScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
       <Text style={styles.title}>Qwiklink Customer Login</Text>
 
       <TextInput
         placeholder="Email"
+        placeholderTextColor="#999"
         style={styles.input}
         onChangeText={setEmail}
+        value={email}
         autoCapitalize="none"
         keyboardType="email-address"
       />
 
       <TextInput
         placeholder="Password"
+        placeholderTextColor="#999"
         style={styles.input}
         onChangeText={setPassword}
+        value={password}
         secureTextEntry
       />
 
-      <Button title="Log In" onPress={handleLogin} />
+      <TouchableOpacity style={styles.button} onPress={handleLogin}>
+        <Text style={styles.buttonText}>LOG IN</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Signup' as never)}>
         <Text style={styles.link}>Don’t have an account? Sign up</Text>
@@ -70,38 +76,49 @@ const LoginScreen = () => {
       <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword' as never)}>
         <Text style={styles.link}>Forgot password?</Text>
       </TouchableOpacity>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
-
-export default LoginScreen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 24,
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 30,
     textAlign: 'center',
-    color: '#0A0A0A',
+    marginBottom: 32,
+    color: '#000',
   },
   input: {
     height: 50,
     borderColor: '#ccc',
     borderWidth: 1,
-    marginBottom: 15,
-    paddingHorizontal: 15,
     borderRadius: 8,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    color: '#000', // black text inside input
+  },
+  button: {
+    backgroundColor: '#007bff',
+    paddingVertical: 14,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center',
+    fontWeight: 'bold',
   },
   link: {
-    marginTop: 15,
+    color: '#007bff',
     textAlign: 'center',
-    color: '#0066cc',
+    marginTop: 8,
   },
 });
 
+export default LoginScreen;
