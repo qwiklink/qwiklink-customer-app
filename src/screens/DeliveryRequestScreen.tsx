@@ -19,7 +19,7 @@ const DeliveryRequestScreen = () => {
 
     try {
       const res = await axios.post(
-        'https://qwiklink-backend.replit.app/api/delivery',
+        'https://2460d40f-4864-42e2-b705-6acbe2cd510e-00-39rf5ppou79oz.picard.replit.dev/api/delivery',
         {
           pickupAddress,
           dropoffAddress,
