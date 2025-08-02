@@ -1,64 +1,97 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { StackScreenProps } from '@react-navigation/stack';
-import { RootStackParamList } from '../types/navigation';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+} from 'react-native';
+import axios from 'axios';
+import { API_BASE_URL } from '../config';
 
-type Props = StackScreenProps<RootStackParamList, 'ForgotPassword'>;
-
-const ForgotPasswordScreen = ({ navigation }: Props) => {
+const ForgotPasswordScreen = () => {
   const [email, setEmail] = useState('');
 
-  const handleReset = () => {
+  const handlePasswordReset = async () => {
     if (!email) {
-      Alert.alert('Enter your email address');
+      Alert.alert('Missing Field', 'Please enter your email address.');
       return;
     }
-    Alert.alert('Password reset link sent to your email');
-    navigation.navigate('Login');
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/auth/forgot-password`,
+        { email }
+      );
+
+      Alert.alert(
+        'Reset Email Sent',
+        response.data.message || 'Please check your email for instructions.'
+      );
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert(
+        'Reset Failed',
+        error.response?.data?.message || 'Something went wrong.'
+      );
+    }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Forgot Password</Text>
-      <Text style={styles.text}>Enter your email to reset your password</Text>
+      <Text style={styles.title}>Forgot Password?</Text>
+
       <TextInput
         style={styles.input}
-        placeholder="Email"
-        autoCapitalize="none"
+        placeholder="Enter your email"
         value={email}
         onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
       />
-      <Button title="Reset Password" onPress={handleReset} color="#004aad" />
+
+      <TouchableOpacity style={styles.button} onPress={handlePasswordReset}>
+        <Text style={styles.buttonText}>Send Reset Link</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
+export default ForgotPasswordScreen;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    justifyContent: 'center',
     backgroundColor: '#fff',
+    padding: 20,
+    justifyContent: 'center',
   },
   title: {
     fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-    color: '#004aad',
-  },
-  text: {
-    textAlign: 'center',
+    fontWeight: '600',
     marginBottom: 20,
+    textAlign: 'center',
     color: '#333',
   },
   input: {
-    borderWidth: 1,
     borderColor: '#ccc',
-    padding: 12,
+    borderWidth: 1,
     borderRadius: 8,
-    marginBottom: 16,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    marginBottom: 20,
+    backgroundColor: '#f9f9f9',
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: '#0066cc',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
-
-export default ForgotPasswordScreen;

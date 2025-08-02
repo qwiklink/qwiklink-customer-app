@@ -1,16 +1,6 @@
 // src/screens/LoginScreen.tsx
-
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -28,45 +18,37 @@ const LoginScreen = () => {
         password,
       });
 
-      const token = response.data.token;
-      await AsyncStorage.setItem('token', token);
-
-      Alert.alert('Login Success', 'You have successfully logged in!');
+      await AsyncStorage.setItem('token', response.data.token);
+      Alert.alert('Success', 'Logged in successfully!');
       navigation.navigate('Home' as never);
     } catch (error: any) {
-      console.error('Login error:', error);
-      Alert.alert(
-        'Login Failed',
-        error.response?.data?.message || `Request failed with status code ${error.response?.status || 'Unknown'}`
-      );
+      Alert.alert('Error', error.response?.data?.message || 'Login failed');
     }
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.title}>Qwiklink Customer Login</Text>
 
       <TextInput
+        style={styles.input}
         placeholder="Email"
         placeholderTextColor="#999"
-        style={styles.input}
-        onChangeText={setEmail}
         value={email}
-        autoCapitalize="none"
-        keyboardType="email-address"
+        onChangeText={setEmail}
       />
 
       <TextInput
+        style={styles.input}
         placeholder="Password"
         placeholderTextColor="#999"
-        style={styles.input}
-        onChangeText={setPassword}
-        value={password}
         secureTextEntry
+        value={password}
+        onChangeText={setPassword}
       />
 
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>LOG IN</Text>
+        <Text style={styles.buttonText}>Log In</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Signup' as never)}>
@@ -76,49 +58,51 @@ const LoginScreen = () => {
       <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword' as never)}>
         <Text style={styles.link}>Forgot password?</Text>
       </TouchableOpacity>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
+
+export default LoginScreen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
+    backgroundColor: '#fff',
+    padding: 30,
     justifyContent: 'center',
-    backgroundColor: '#ffffff',
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
+    color: '#222',
+    marginBottom: 30,
     textAlign: 'center',
-    marginBottom: 32,
-    color: '#000',
   },
   input: {
     height: 50,
-    borderColor: '#ccc',
-    borderWidth: 1,
+    backgroundColor: '#f1f1f1',
     borderRadius: 8,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    color: '#000', // black text inside input
+    paddingHorizontal: 15,
+    marginBottom: 15,
+    fontSize: 16,
+    color: '#000',
   },
   button: {
     backgroundColor: '#007bff',
     paddingVertical: 14,
     borderRadius: 8,
-    marginBottom: 16,
+    marginTop: 10,
   },
   buttonText: {
     color: '#fff',
     textAlign: 'center',
     fontWeight: 'bold',
+    fontSize: 16,
   },
   link: {
+    marginTop: 15,
     color: '#007bff',
     textAlign: 'center',
-    marginTop: 8,
+    fontSize: 14,
   },
 });
-
-export default LoginScreen;

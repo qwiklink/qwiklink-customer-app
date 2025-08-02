@@ -1,46 +1,55 @@
-// src/screens/DeliveryRequestScreen.tsx
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert, ScrollView } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  StyleSheet,
+  ScrollView,
+} from 'react-native';
 import axios from 'axios';
-import authHeader from '../utils/authHeader';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { API_BASE_URL } from '../config';
 
 const DeliveryRequestScreen = () => {
-  const [pickupAddress, setPickupAddress] = useState('');
-  const [dropoffAddress, setDropoffAddress] = useState('');
-  const [recipientName, setRecipientName] = useState('');
-  const [recipientPhone, setRecipientPhone] = useState('');
-  const [parcelSize, setParcelSize] = useState('');
+  const navigation = useNavigation();
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [dropoffLocation, setDropoffLocation] = useState('');
+  const [packageDetails, setPackageDetails] = useState('');
 
   const handleSubmit = async () => {
-    if (!pickupAddress || !dropoffAddress || !recipientName || !recipientPhone || !parcelSize) {
-      Alert.alert('Please fill in all fields');
+    if (!pickupLocation || !dropoffLocation || !packageDetails) {
+      Alert.alert('Missing Information', 'Please fill in all fields.');
       return;
     }
 
     try {
-      const res = await axios.post(
-        'https://2460d40f-4864-42e2-b705-6acbe2cd510e-00-39rf5ppou79oz.picard.replit.dev/api/delivery',
+      const token = await AsyncStorage.getItem('token');
+
+      const response = await axios.post(
+        `${API_BASE_URL}/api/delivery/create`,
         {
-          pickupAddress,
-          dropoffAddress,
-          recipientName,
-          recipientPhone,
-          parcelSize,
+          pickupLocation,
+          dropoffLocation,
+          packageDetails,
         },
-        await authHeader() // ✅ include token
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
 
-      console.log('✅ Delivery created:', res.data);
-      Alert.alert('Success', 'Your delivery has been requested.');
-      setPickupAddress('');
-      setDropoffAddress('');
-      setRecipientName('');
-      setRecipientPhone('');
-      setParcelSize('');
-    } catch (err: unknown) {
-      const error = err as Error;
-      console.error('❌ Delivery error:', error.message);
-      Alert.alert('Error', 'Failed to request delivery');
+      Alert.alert('Success', 'Delivery request submitted!');
+      navigation.navigate('Home' as never);
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert(
+        'Error',
+        error.response?.data?.message || 'Failed to submit delivery request.'
+      );
     }
   };
 
@@ -50,61 +59,68 @@ const DeliveryRequestScreen = () => {
 
       <TextInput
         style={styles.input}
-        placeholder="Pickup Address"
-        value={pickupAddress}
-        onChangeText={setPickupAddress}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Dropoff Address"
-        value={dropoffAddress}
-        onChangeText={setDropoffAddress}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Recipient Name"
-        value={recipientName}
-        onChangeText={setRecipientName}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Recipient Phone"
-        value={recipientPhone}
-        onChangeText={setRecipientPhone}
-        keyboardType="phone-pad"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Parcel Size (e.g. Small, Medium, Large)"
-        value={parcelSize}
-        onChangeText={setParcelSize}
+        placeholder="Pickup Location"
+        value={pickupLocation}
+        onChangeText={setPickupLocation}
       />
 
-      <Button title="Submit Delivery" onPress={handleSubmit} color="#004aad" />
+      <TextInput
+        style={styles.input}
+        placeholder="Dropoff Location"
+        value={dropoffLocation}
+        onChangeText={setDropoffLocation}
+      />
+
+      <TextInput
+        style={styles.input}
+        placeholder="Package Details"
+        value={packageDetails}
+        onChangeText={setPackageDetails}
+        multiline
+        numberOfLines={4}
+      />
+
+      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+        <Text style={styles.buttonText}>Submit Request</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
 
+export default DeliveryRequestScreen;
+
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
     flexGrow: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
+    padding: 20,
+    justifyContent: 'center',
   },
   title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    fontSize: 24,
+    fontWeight: '600',
+    marginBottom: 30,
     textAlign: 'center',
-    color: '#004aad',
+    color: '#222222',
   },
   input: {
-    borderWidth: 1,
     borderColor: '#ccc',
-    padding: 12,
+    borderWidth: 1,
     borderRadius: 8,
-    marginBottom: 16,
+    padding: 15,
+    marginBottom: 20,
+    fontSize: 16,
+    backgroundColor: '#f9f9f9',
+  },
+  button: {
+    backgroundColor: '#0066cc',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
-
-export default DeliveryRequestScreen;

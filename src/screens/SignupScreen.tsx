@@ -1,90 +1,134 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from 'react-native';
 import axios from 'axios';
-import { StackScreenProps } from '@react-navigation/stack';
-import { RootStackParamList } from '../types/navigation';
+import { useNavigation } from '@react-navigation/native';
+import { API_BASE_URL } from '../config';
 
-type Props = StackScreenProps<RootStackParamList, 'Signup'>;
+const SignupScreen = () => {
+  const navigation = useNavigation();
 
-const SignupScreen = ({ navigation }: Props) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSignup = async () => {
+    if (!name || !email || !phone || !password) {
+      Alert.alert('Missing Fields', 'Please fill in all fields.');
+      return;
+    }
+
     try {
-      const res = await axios.post('https://2460d40f-4864-42e2-b705-6acbe2cd510e-00-39rf5ppou79oz.picard.replit.dev/api/auth/register', {
+      const response = await axios.post(`${API_BASE_URL}/api/auth/register`, {
         name,
         email,
         phone,
         password,
-        role: 'customer',
+        role: 'customer', // Important: register as customer
       });
-      Alert.alert('Account created!', 'You can now log in.');
-      navigation.navigate('Login');
-    } catch (err: unknown) {
-      const error = err as Error;
-      Alert.alert('Signup Failed', error.message);
+
+      Alert.alert('Success', 'Account created! You can now log in.');
+      navigation.navigate('Login' as never);
+    } catch (error: any) {
+      console.error(error);
+      Alert.alert(
+        'Signup Failed',
+        error.response?.data?.message || 'Something went wrong.'
+      );
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create Qwiklink Account</Text>
+      <Text style={styles.title}>Create Your Account</Text>
+
       <TextInput
-        style={styles.input}
         placeholder="Full Name"
+        style={styles.input}
         value={name}
         onChangeText={setName}
       />
       <TextInput
-        style={styles.input}
-        placeholder="Phone"
-        value={phone}
-        keyboardType="phone-pad"
-        onChangeText={setPhone}
-      />
-      <TextInput
-        style={styles.input}
         placeholder="Email"
-        autoCapitalize="none"
+        style={styles.input}
         value={email}
         onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
       <TextInput
+        placeholder="Phone Number"
         style={styles.input}
+        value={phone}
+        onChangeText={setPhone}
+        keyboardType="phone-pad"
+      />
+      <TextInput
         placeholder="Password"
-        secureTextEntry
+        style={styles.input}
         value={password}
         onChangeText={setPassword}
+        secureTextEntry
       />
-      <Button title="Sign Up" onPress={handleSignup} color="#004aad" />
+
+      <TouchableOpacity style={styles.button} onPress={handleSignup}>
+        <Text style={styles.buttonText}>Sign Up</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Login' as never)}>
+        <Text style={styles.link}>Already have an account? Log in</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
+export default SignupScreen;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    justifyContent: 'center',
     backgroundColor: '#fff',
+    padding: 20,
+    justifyContent: 'center',
   },
   title: {
     fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 24,
+    fontWeight: '600',
+    marginBottom: 25,
     textAlign: 'center',
-    color: '#004aad',
+    color: '#333',
   },
   input: {
-    borderWidth: 1,
     borderColor: '#ccc',
-    padding: 12,
+    borderWidth: 1,
     borderRadius: 8,
-    marginBottom: 16,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    marginBottom: 15,
+    fontSize: 16,
+    backgroundColor: '#f9f9f9',
+  },
+  button: {
+    backgroundColor: '#0066cc',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  link: {
+    textAlign: 'center',
+    marginTop: 10,
+    color: '#0066cc',
   },
 });
-
-export default SignupScreen;
